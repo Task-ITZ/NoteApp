@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
+        <variable
+            name="NoteViewModel"
+            type="com.example.noteApp.modelView.NoteViewModel" />
+    </data>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_white_corner"
+        android:orientation="vertical"
+        android:layout_margin="16dp">
+
+        <TextView
+            android:id="@+id/edt_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:textSize="20dp"
+            android:textColor="@color/black"
+            android:text="What is the name of list?"
+            android:imeOptions="actionDone"/>
+
+        <EditText
+            android:id="@+id/edt_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:layout_margin="16dp"
+            android:text="@={NoteViewModel.title}"
+            android:backgroundTint="@android:color/holo_blue_bright"
+            android:hint="Nội dung"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_save"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:layout_margin="16dp"
+                android:textColor="@android:color/holo_purple"
+                android:text="CREATE" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</layout>

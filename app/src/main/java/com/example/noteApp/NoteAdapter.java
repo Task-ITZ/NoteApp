@@ -25,7 +25,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     }
     public void updateNotes(List<Note> updatedNotes) {
         this.notes = updatedNotes;
-        notifyDataSetChanged();  // Cập nhật lại RecyclerView
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -38,6 +38,9 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        if (notes == null || position < 0 || position >= notes.size()) {
+            return;
+        }
         Note note = notes.get(position);
         if (note == null) {
             return;

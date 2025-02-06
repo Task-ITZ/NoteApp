@@ -20,15 +20,14 @@ public class MySharedPreferences {
         this.context = context;
     }
 
-    public void putStringValue(String key, Set<String> values){
+    public void putStringValue(String key, String value){
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_SHAREs_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putStringSet(key, values);
+        editor.putString(key, value);
         editor.apply();
     }
-    public Set<String> getStringValue(String key){
+    public String getStringValue(String key){
         SharedPreferences sharedPreferences = context.getSharedPreferences(MY_SHAREs_PREFERENCES, Context.MODE_PRIVATE);
-        Set<String> valueDefault = new HashSet<>();
-        return sharedPreferences.getStringSet(key, valueDefault);
+        return sharedPreferences.getString(key, "");
     }
 }

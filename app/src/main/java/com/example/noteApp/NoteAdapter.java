@@ -44,14 +44,22 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         }
         holder.number.setText(String.valueOf(position + 1));
         holder.noteTitle.setText(note.getTitle());
-        holder.layoutItem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                iClickItemNoteListener.onClickItemNote(note);
-            }
-        });
+
+        if (iClickItemNoteListener != null) {
+            holder.layoutItem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    iClickItemNoteListener.onClickItemNote(note);
+                }
+            });
+        } else {
+            holder.layoutItem.setOnClickListener(null);
+        }
     }
 
+    public List<Note> getNotes() {
+        return notes;
+    }
 
     @Override
     public int getItemCount() {

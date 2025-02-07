@@ -5,22 +5,25 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.renderscript.ScriptGroup;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.noteApp.dataLocal.DataLocalManager;
-import com.example.noteApp.databinding.ActivityMainBinding;
 import com.example.noteApp.databinding.LayoutDialogBinding;
 import com.example.noteApp.model.Note;
 import com.example.noteApp.modelView.NoteViewModel;
@@ -28,26 +31,32 @@ import com.example.noteApp.myInterface.IClickItemNoteListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity {
 
     private FloatingActionButton fab ;
     private RecyclerView recyclerView;
+    private ContentAdapter contentAdapter;
     private NoteAdapter noteAdapter;
+    private Note selectedNote;
     private NoteViewModel noteViewModel;
-    private static final int REQUEST_CODE_DETAIL = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_detail);
 
-        noteViewModel = new NoteViewModel();
+        TextView title = findViewById(R.id.title);
+        fab = findViewById(R.id.fab);
+        recyclerView = findViewById(R.id.recyclerView);
 
+        selectedNote = getIntent().getParcelableExtra("note");
+        title.setText(selectedNote.getTitle());
+        contentAdapter = new ContentAdapter(selectedNote.getListContent());
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(contentAdapter);
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -56,38 +65,10 @@ public class MainActivity extends AppCompatActivity {
                 openDialog(Gravity.CENTER);
             }
         });
-
-//        DataLocalManager.init(getApplicationContext());
-//        List<Note> note = DataLocalManager.getListNotes();
-//        Set<String> note = new HashSet<>();
-//        note.add("aaa");
-//        note.add("bbb");
-
-
-        DataLocalManager.init(getApplicationContext());
-
-        List<Note> listNotes = DataLocalManager.getListNotes();
-        DataLocalManager.setListNotes(listNotes);
-
-        recyclerView = findViewById(R.id.recyclerView);
-
-
-
-        noteAdapter = new NoteAdapter(listNotes, new IClickItemNoteListener() {
-            @Override
-            public void onClickItemNote(Note note) {
-                onClickGoToDetail(note);
-            }
-        });
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(noteAdapter);
-
     }
-
     private void openDialog(int gravity){
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         LayoutDialogBinding dialogBinding = DataBindingUtil.inflate(
                 getLayoutInflater(), R.layout.layout_dialog, null, false);
 
@@ -105,61 +86,43 @@ public class MainActivity extends AppCompatActivity {
         windowAttributes.gravity = gravity;
         window.setAttributes(windowAttributes);
 
-
+        EditText editTextContent = dialog.findViewById(R.id.edt_content);
         Button btnSave = dialog.findViewById(R.id.btn_save);
 
+        btnSave.setOnClickListener(view -> {
+            String newContent = editTextContent.getText().toString().trim();
 
-
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+            if (!newContent.isEmpty()) {
+                List<String> contents = selectedNote.getListContent();
+                if (contents == null) {
+                    contents = new ArrayList<>();
+                }
+                contents.add(newContent);
+                selectedNote.setListContent(contents);
 
                 List<Note> listNotes = DataLocalManager.getListNotes();
-                listNotes.add(new Note(noteViewModel.getTitle(), noteViewModel.getListContent()));
+                if (listNotes == null) {
+                    listNotes = new ArrayList<>();
+                }
+                for (int i = 0; i < listNotes.size(); i++) {
+                    if (listNotes.get(i).getTitle().equals(selectedNote.getTitle())) {
+                        listNotes.set(i, selectedNote);
+                        break;
+                    }
+                }
                 DataLocalManager.setListNotes(listNotes);
 
-                List<Note> updatedNotes = new ArrayList<>();
-                for (Note note : listNotes) {
-                    updatedNotes.add(note);
-                }
-                noteAdapter.updateNotes(updatedNotes);
-                noteViewModel.setTitle("");
-                dialogBinding.invalidateAll();
-                dialog.dismiss();
+                contentAdapter.notifyDataSetChanged();
             }
+
+            dialog.dismiss();
         });
+
         dialog.show();
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        List<Note> updatedNotes = DataLocalManager.getListNotes();
-        if (updatedNotes != null) {
-            noteAdapter.updateNotes(updatedNotes);
-        }
-    }
-
-    private void onClickGoToDetail(Note note) {
-        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-        intent.putExtra("note", note);
-        startActivityForResult(intent, REQUEST_CODE_DETAIL);
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_CODE_DETAIL && resultCode == RESULT_OK && data != null) {
-            ArrayList<Note> updatedNotes = data.getParcelableArrayListExtra("updatedNotes");
-            if (updatedNotes != null) {
-                noteAdapter.updateNotes(updatedNotes);
-            }
-        }
     }
 
 }

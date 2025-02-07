@@ -31,13 +31,31 @@ public class DataLocalManager {
         return instance;
     }
 
-    public static void setListNotes (Set<String> notes){
-
-        DataLocalManager.getInstance().mySharedPreferences.putStringValue(PREF_LIST_NOTE, notes);
+    public static void setListNotes (List<Note> listNotes){
+        Gson gson = new Gson();
+        JsonArray jsonArray = gson.toJsonTree(listNotes).getAsJsonArray();
+        String strJsonArray = jsonArray.toString();
+        DataLocalManager.getInstance().mySharedPreferences.putStringValue(PREF_LIST_NOTE, strJsonArray);
     }
 
-    public static Set<String> getListNotes(){
+    public static List<Note> getListNotes(){
+        String strJsonArray = DataLocalManager.getInstance().mySharedPreferences.getStringValue(PREF_LIST_NOTE);
+        List<Note> noteList = new ArrayList<>();
 
-        return DataLocalManager.getInstance().mySharedPreferences.getStringValue(PREF_LIST_NOTE);
+        try {
+            JSONArray jsonArray = new JSONArray(strJsonArray);
+            JSONObject jsonObject;
+            Note note;
+            Gson gson = new Gson();
+            for (int i=0; i<jsonArray.length(); i++)
+            {
+                jsonObject = jsonArray.getJSONObject(i);
+                note = gson.fromJson(jsonObject.toString(), Note.class);
+                noteList.add(note);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return noteList;
     }
 }

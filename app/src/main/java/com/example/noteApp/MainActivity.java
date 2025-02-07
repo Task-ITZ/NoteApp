@@ -71,15 +71,12 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.recyclerView);
 
-        List<Note> notes = new ArrayList<>();
-        for (Note note : listNotes) {
-            notes.add(note);
-        }
 
-        noteAdapter = new NoteAdapter(notes, new IClickItemNoteListener() {
+
+        noteAdapter = new NoteAdapter(listNotes, new IClickItemNoteListener() {
             @Override
             public void onClickItemNote(Note note) {
-                onClickGoToDetail(notes);
+                onClickGoToDetail(note);
             }
         });
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -118,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 List<Note> listNotes = DataLocalManager.getListNotes();
-                listNotes.add(new Note(noteViewModel.getTitle()));
+                listNotes.add(new Note(noteViewModel.getTitle(), noteViewModel.getListContent()));
                 DataLocalManager.setListNotes(listNotes);
 
                 List<Note> updatedNotes = new ArrayList<>();
@@ -139,10 +136,18 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private void onClickGoToDetail(List<Note> notes) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        List<Note> updatedNotes = DataLocalManager.getListNotes();
+        if (updatedNotes != null) {
+            noteAdapter.updateNotes(updatedNotes);
+        }
+    }
 
+    private void onClickGoToDetail(Note note) {
         Intent intent = new Intent(MainActivity.this, DetailActivity.class);
-        intent.putParcelableArrayListExtra("notes", new ArrayList<>(notes));
+        intent.putExtra("note", note);
         startActivityForResult(intent, REQUEST_CODE_DETAIL);
     }
     @Override

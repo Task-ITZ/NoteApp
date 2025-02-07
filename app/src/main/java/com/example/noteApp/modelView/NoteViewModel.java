@@ -11,6 +11,15 @@ import java.util.List;
 public class NoteViewModel extends BaseObservable {
     private String title;
     private List<Note> noteList;
+    private List<String> listContent;
+
+    public List<String> getListContent() {
+        return listContent;
+    }
+
+    public void setListContent(List<String> listContent) {
+        this.listContent = listContent;
+    }
 
     public void setTitle(String title) {
         this.title = title;

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -36,7 +37,9 @@ public class DetailActivity extends AppCompatActivity {
 
     private FloatingActionButton fab ;
     private RecyclerView recyclerView;
+    private ContentAdapter contentAdapter;
     private NoteAdapter noteAdapter;
+    private Note selectedNote;
     private NoteViewModel noteViewModel;
 
     @Override
@@ -45,6 +48,16 @@ public class DetailActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_detail);
 
+        TextView title = findViewById(R.id.title);
+        fab = findViewById(R.id.fab);
+        recyclerView = findViewById(R.id.recyclerView);
+
+        selectedNote = getIntent().getParcelableExtra("note");
+        title.setText(selectedNote.getTitle());
+        contentAdapter = new ContentAdapter(selectedNote.getListContent());
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(contentAdapter);
+
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,23 +65,10 @@ public class DetailActivity extends AppCompatActivity {
                 openDialog(Gravity.CENTER);
             }
         });
-
-        recyclerView = findViewById(R.id.recyclerView);
-        ArrayList<Note> noteList = getIntent().getParcelableArrayListExtra("notes");
-        if (noteList == null) noteList = new ArrayList<>();
-
-        noteAdapter = new NoteAdapter(noteList, null);
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(noteAdapter);
-
-
     }
     private void openDialog(int gravity){
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        noteViewModel = new NoteViewModel();
-
         LayoutDialogBinding dialogBinding = DataBindingUtil.inflate(
                 getLayoutInflater(), R.layout.layout_dialog, null, false);
 
@@ -86,39 +86,43 @@ public class DetailActivity extends AppCompatActivity {
         windowAttributes.gravity = gravity;
         window.setAttributes(windowAttributes);
 
-
+        EditText editTextContent = dialog.findViewById(R.id.edt_content);
         Button btnSave = dialog.findViewById(R.id.btn_save);
 
-
-
         btnSave.setOnClickListener(view -> {
-            List<Note> listNotes = DataLocalManager.getListNotes();
-            listNotes.add(new Note(noteViewModel.getTitle()));
-            DataLocalManager.setListNotes(listNotes);
+            String newContent = editTextContent.getText().toString().trim();
 
-            noteAdapter.updateNotes(new ArrayList<>(listNotes));
-            noteViewModel.setTitle("");
-            dialogBinding.invalidateAll();
+            if (!newContent.isEmpty()) {
+                List<String> contents = selectedNote.getListContent();
+                if (contents == null) {
+                    contents = new ArrayList<>();
+                }
+                contents.add(newContent);
+                selectedNote.setListContent(contents);
+
+                List<Note> listNotes = DataLocalManager.getListNotes();
+                if (listNotes == null) {
+                    listNotes = new ArrayList<>();
+                }
+                for (int i = 0; i < listNotes.size(); i++) {
+                    if (listNotes.get(i).getTitle().equals(selectedNote.getTitle())) {
+                        listNotes.set(i, selectedNote);
+                        break;
+                    }
+                }
+                DataLocalManager.setListNotes(listNotes);
+
+                contentAdapter.notifyDataSetChanged();
+            }
+
             dialog.dismiss();
-
-            Intent resultIntent = new Intent();
-            resultIntent.putParcelableArrayListExtra("updatedNotes", new ArrayList<>(listNotes));
-            setResult(RESULT_OK, resultIntent);
         });
+
         dialog.show();
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-    }
-
-    @Override
-    public void onBackPressed() {
-        Intent resultIntent = new Intent();
-        resultIntent.putParcelableArrayListExtra("updatedNotes", new ArrayList<>(noteAdapter.getNotes()));
-        setResult(RESULT_OK, resultIntent);
-
-        super.onBackPressed();
     }
 
 }

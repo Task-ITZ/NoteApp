@@ -14,18 +14,16 @@ import com.example.noteApp.myInterface.IClickItemNoteListener;
 
 import java.util.List;
 
-public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
+public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ViewHolder> {
 
-    private List<Note> notes;
-    private IClickItemNoteListener iClickItemNoteListener;
+    private List<String> contents;
 
-    public NoteAdapter(List<Note> notes, IClickItemNoteListener listener) {
-        this.notes = notes;
-        this.iClickItemNoteListener = listener;
+    public ContentAdapter(List<String> contents) {
+        this.contents = contents;
     }
 
-    public void updateNotes(List<Note> updatedNotes) {
-        this.notes = updatedNotes;
+    public void updateContents(List<String> updatedContents) {
+        this.contents = updatedContents;
         notifyDataSetChanged();
     }
 
@@ -39,36 +37,26 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        if (notes == null || position < 0 || position >= notes.size()) {
+        if (contents == null || position < 0 || position >= contents.size()) {
             return;
         }
-        Note note = notes.get(position);
-        if (note == null) {
+        String content = contents.get(position);
+        if (content == null) {
             return;
         }
         holder.number.setText(String.valueOf(position + 1));
-        holder.noteTitle.setText(note.getTitle());
+        holder.noteTitle.setText(content);
 
-        if (iClickItemNoteListener != null) {
-            holder.layoutItem.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    iClickItemNoteListener.onClickItemNote(note);
-                }
-            });
-        } else {
-            holder.layoutItem.setOnClickListener(null);
-        }
     }
 
-    public List<Note> getNotes() {
-        return notes;
+    public List<String> getContents() {
+        return contents;
     }
 
     @Override
     public int getItemCount() {
-        if (notes != null) {
-            return notes.size();
+        if (contents != null) {
+            return contents.size();
         }
         return 0;
     }
